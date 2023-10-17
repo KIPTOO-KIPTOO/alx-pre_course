@@ -1,0 +1,54 @@
+#include <stdarg.h>
+#include <unistd.h>
+#include <stdio.h>
+
+int _printf(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    int chars_printed = 0;
+
+    for (int i = 0; format[i] != '\0'; i++) {
+        if (format[i] == '%') {
+            i++; // Move past the '%'
+            if (format[i] == '\0') {
+                break; // Stop if '%' is the last character
+            }
+
+            if (format[i] == 'c') {
+                // Handle character
+                char c = va_arg(args, int);
+                write(1, &c, 1); // 1 is the file descriptor for stdout
+                chars_printed++;
+            } else if (format[i] == 's') {
+                // Handle string
+                char *s = va_arg(args, char *);
+                int len = 0;
+                while (s[len] != '\0') {
+                    len++;
+                }
+                write(1, s, len);
+                chars_printed += len;
+            } else if (format[i] == '%') {
+                // Handle '%'
+                write(1, &format[i], 1);
+                chars_printed++;
+            }
+        } else {
+            // Normal character, not a conversion specifier
+            write(1, &format[i], 1);
+            chars_printed++;
+        }
+    }
+
+    va_end(args);
+    return chars_printed;
+}
+
+int main() {
+    char c = 'A';
+    char *s = "Hello, World!";
+    int result = _printf("I'm not going anywhere. You can print that wherever you want to. I'm here and I'm a Spur for life %c %s%% mandatory\n", c, s);
+    printf("\nTotal characters printed: %d\n", result);
+    return 0;
+}
